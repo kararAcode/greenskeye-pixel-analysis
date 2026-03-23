@@ -1,0 +1,11 @@
+name: green-pixel-analysis
+
+channels:
+  - defaults
+
+dependencies:
+  - python=3.10
+  - opencv
+  - numpy
+  - pip: 
+    - pillow
