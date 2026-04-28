@@ -4,7 +4,6 @@ import numpy as np
 import zipfile
 import io
 from PIL import Image
-import csv
 import os
 from pathlib import Path
 
@@ -12,14 +11,8 @@ from pathlib import Path
 def greenPixelAnalysisBatch(inputPath, outputDirPath):
     os.makedirs(outputDirPath, exist_ok=True)
 
-    resultsPath = os.path.join(outputDirPath, "results.csv")
-
     with zipfile.ZipFile(inputPath, "r") as zf:
         fileList = zf.namelist()
-
-        rows = [
-            ["Filename", "Green Pixel Count", "Green Pixel Percentage", "Mask Path"]
-        ]
 
         for filename in fileList:
             if filename.endswith("/"):
@@ -37,11 +30,7 @@ def greenPixelAnalysisBatch(inputPath, outputDirPath):
                 lowerGreen = np.array([40, 40, 40])
                 upperGreen = np.array([80, 255, 255])
 
-                height, width = hsvImage.shape[:2]
                 mask = cv2.inRange(hsvImage, lowerGreen, upperGreen)
-
-                greenPixelCount = cv2.countNonZero(mask)
-                greenPixelPercentage = greenPixelCount / (height * width)
 
                 originalStem = Path(filename).stem
                 maskFilename = f"{originalStem}_green_mask.png"
@@ -49,31 +38,20 @@ def greenPixelAnalysisBatch(inputPath, outputDirPath):
 
                 cv2.imwrite(maskPath, mask)
 
-                rows.append([
-                    filename,
-                    greenPixelCount,
-                    greenPixelPercentage,
-                    maskFilename
-                ])
-
             except Image.UnidentifiedImageError:
                 print(f"Could not identify image format for {filename}")
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
 
-    with open(resultsPath, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(rows)
-
-    print("Analysis complete.")
+    print("Mask generation complete.")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Analyze a batch of images and count green pixels"
+        description="Generate green-pixel masks for a batch of images"
     )
     parser.add_argument("--input", required=True, help="Path to the input zip file")
-    parser.add_argument("--output", required=True, help="Path to save the analysis output")
+    parser.add_argument("--output", required=True, help="Path to save output mask images")
 
     args = parser.parse_args()
     greenPixelAnalysisBatch(args.input, args.output)
