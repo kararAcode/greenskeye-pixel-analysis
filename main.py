@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import zipfile
 import io
-from PIL import Image
+from PIL import Image, ImageOps
 import os
 from pathlib import Path
 
@@ -22,7 +22,9 @@ def greenPixelAnalysisBatch(inputPath, outputDirPath):
                 imageBytes = zf.read(filename)
                 imageStream = io.BytesIO(imageBytes)
 
-                pilImage = Image.open(imageStream).convert("RGB")
+                pilImage = Image.open(imageStream)
+                pilImage = ImageOps.exif_transpose(pilImage)
+                pilImage = pilImage.convert("RGB")
                 image = np.array(pilImage)
 
                 hsvImage = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
