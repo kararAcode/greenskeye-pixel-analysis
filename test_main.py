@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from main import capture_time_from_filename, greenPixelAnalysisBatch
+from main import build_time_series, capture_time_from_filename, greenPixelAnalysisBatch
 
 
 class CaptureTimeTests(unittest.TestCase):
@@ -24,6 +24,15 @@ class CaptureTimeTests(unittest.TestCase):
 
     def test_unknown_capture_time_is_blank(self):
         self.assertEqual(capture_time_from_filename("plant.jpeg"), "")
+
+    def test_time_series_is_sorted_and_ignores_unknown_times(self):
+        rows = [
+            ["later.png", "2026-08-21T14:30:15", 20, 20.0],
+            ["unknown.png", "", 30, 30.0],
+            ["earlier.png", "2026-08-20T14:30:15", 10, 10.0],
+        ]
+        series = build_time_series(rows)
+        self.assertEqual([point[2] for point in series], ["earlier.png", "later.png"])
 
 
 class BatchAnalysisTests(unittest.TestCase):
@@ -57,6 +66,10 @@ class BatchAnalysisTests(unittest.TestCase):
             self.assertEqual(rows[1][2], "8")
             self.assertEqual(float(rows[1][3]), 100.0)
             self.assertTrue((output_path / "plant_20260820_143015_green_mask.png").exists())
+            graph_path = output_path / "green_pixel_count_over_time.png"
+            self.assertTrue(graph_path.exists())
+            with Image.open(graph_path) as graph:
+                self.assertEqual(graph.size, (1600, 900))
 
 
 if __name__ == "__main__":

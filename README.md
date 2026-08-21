@@ -7,7 +7,9 @@ The model accepts a ZIP archive of images. For each recognizable image, it:
 - generates a binary green-pixel mask;
 - counts the green pixels;
 - calculates the percentage of the full image classified as green; and
-- records the image filename and capture time in `results.csv`.
+- records the image filename and capture time in `results.csv`; and
+- plots capture time against green-pixel count in
+  `green_pixel_count_over_time.png`.
 
 Capture time is read from standard image EXIF metadata when available. If the
 image has no usable EXIF timestamp, the model recognizes timestamps such as
@@ -21,6 +23,10 @@ Image Filename,Capture Time,Green Pixel Count,Green Pixel Percentage
 ```
 
 Green Pixel Percentage is reported on a 0–100 scale.
+
+The graph is ordered chronologically and includes only images with a known
+capture time. Images without a capture time remain in `results.csv` but are
+omitted from the graph.
 
 Run the tests with:
 
